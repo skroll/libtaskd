@@ -36,11 +36,11 @@ extern "C"
 {
 #endif
 
+// TODO Protocol status codes as defines?
 
-
-
-
-
+int    taskd_request     (const char*, int, const char*);
+int    taskd_ssl_request (const char*, int, const char*, const char*);
+size_t taskd_response    (void*, size_t);
 
 #ifdef __cplusplus
 };

@@ -29,7 +29,28 @@
 #include <taskd.h>
 
 ////////////////////////////////////////////////////////////////////////////////
-extern "C" int foo (char* buf, size_t size)
+extern "C" int taskd_request (
+  const char* server,
+  int port,
+  const char* request)
+{
+  return 500;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+extern "C" int taskd_ssl_request (
+  const char* server,
+  int port,
+  const char* certificate,
+  const char* request)
+{
+  return 500;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+extern "C" size_t taskd_response (
+  void* buffer,
+  size_t size)
 {
   return 0;
 }
