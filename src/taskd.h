@@ -36,11 +36,26 @@ extern "C"
 {
 #endif
 
-// TODO Protocol status codes as defines?
+#define TASKD_STATUS_OK                  200
+#define TASKD_STATUS_NO_CHANGE           201
+#define TASKD_STATUS_DEPRECATED          300
+#define TASKD_STATUS_REDIRECT            301
+#define TASKD_STATUS_RETRY               302
+#define TASKD_STATUS_MALFORMED           400
+#define TASKD_STATUS_ENCODING            401
+#define TASKD_STATUS_UNAVAILABLE         420
+#define TASKD_STATUS_ACCESS              430
+#define TASKD_STATUS_SUSPENDED           431
+#define TASKD_STATUS_TERMINATED          432
+#define TASKD_STATUS_SYNTAX_ERROR        500
+#define TASKD_STATUS_PARAM_ERROR         501
+#define TASKD_STATUS_UNIMPLEMENTED       502
+#define TASKD_STATUS_PARAM_UNIMPLEMENTED 503
+#define TASKD_STATUS_TOO_BIG             504
 
-int    taskd_request     (const char*, int, const char*);
-int    taskd_ssl_request (const char*, int, const char*, const char*);
-size_t taskd_response    (void*, size_t);
+int    taskd_request        (const char*, int, const char*, const char*);
+int    taskd_nonssl_request (const char*, int, const char*);
+size_t taskd_response       (char*, size_t);
 
 #ifdef __cplusplus
 };
