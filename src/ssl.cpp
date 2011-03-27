@@ -40,15 +40,16 @@
 std::string response;
 
 ////////////////////////////////////////////////////////////////////////////////
-void taskd_init_ssl (void)
+bool taskd_init_ssl (void)
 {
-  if (/*! THREAD_setup () ||*/ ! SSL_library_init ())
+  if (! SSL_library_init ())
   {
     fprintf (stderr, "** OpenSSL initialization failed!\n");
-    exit (-1);
+    return false;
   }
 
   SSL_load_error_strings ();
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -100,7 +101,12 @@ bool taskd_send_request (BIO* bio, const char* request)
   {
     error = BIO_write (bio, request + bytes, strlen (request) - bytes);
     if (error <= 0)
-      return false;
+    {
+      if (! BIO_should_retry (bio))
+        return false;
+
+      error = 0;
+    }
   }
 
   return true;
@@ -110,22 +116,29 @@ bool taskd_send_request (BIO* bio, const char* request)
 void taskd_read_response (BIO* bio)
 {
   response = "";
-/*
-  char buf[81];
-  int bytes;
+
+  int error;
+  int bytes = 0;
+  char buf[80];
+
   do
   {
-    bytes = BIO_read (bio, buf, 80);
-    if (bytes <= 0)
-      return;
+    error = BIO_read (bio, buf, 79);
+    if (error > 0)
+    {
+      buf[error] = 0;
+      fprintf (stderr, "  <<< %s\n", buf);
+      response += buf;
+    }
+    else
+    {
+      if (! BIO_should_retry (bio))
+        return;
 
-    buf[bytes] = '\0';
-    response += buf;
+      error = 0;
+    }
   }
-  while (bytes == 80);
-
-  fprintf (stderr, "response=%s\n", response.c_str ());
-*/
+  while (error == 0 || error == 79);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

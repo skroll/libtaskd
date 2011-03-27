@@ -37,7 +37,7 @@
 #include <taskd.h>
 
 // In ssl.cpp
-void taskd_init_ssl ();
+bool taskd_init_ssl ();
 std::string taskd_connection (const char*, int);
 bool taskd_verify_certificate (SSL*);
 bool taskd_send_request (BIO*, const char*);
@@ -47,93 +47,98 @@ void handle_error (const char*, int, const char*);
 ////////////////////////////////////////////////////////////////////////////////
 extern "C" int taskd_request (
   const char* server,
-  int port,
   const char* certificate,
   const char* request)
 {
-  std::string connection = taskd_connection (server, port);
-  taskd_init_ssl ();
+  int status = TASKD_STATUS_OK;
 
-  // Connect
-  SSL_CTX* ctx = SSL_CTX_new (SSLv23_client_method ());
-  if (ctx)
+  if (taskd_init_ssl ())
   {
-    if (SSL_CTX_load_verify_locations (ctx, certificate, NULL))
+    // Connect
+    SSL_CTX* ctx = SSL_CTX_new (SSLv23_client_method ());
+    if (ctx)
     {
-      BIO* bio = BIO_new_ssl_connect (ctx);
-      if (bio)
+      if (SSL_CTX_load_verify_locations (ctx, certificate, NULL))
       {
-        SSL* ssl;
-        BIO_get_ssl (bio, &ssl);
-        SSL_set_mode (ssl, SSL_MODE_AUTO_RETRY);
-
-        BIO_set_conn_hostname (bio, connection.c_str ());
-        if (BIO_do_connect (bio) > 0)
+        BIO* bio = BIO_new_ssl_connect (ctx);
+        if (bio)
         {
-          if (SSL_get_verify_result (ssl) == X509_V_OK)
-          {
-            if (taskd_verify_certificate (ssl))
-            {
-              fprintf (stderr, "begin\n");
-              if (taskd_send_request (bio, request))
-                taskd_read_response (bio);
-              else
-                fprintf (stderr, "Error!\n");
+          SSL* ssl;
+          BIO_get_ssl (bio, &ssl);
+          SSL_set_mode (ssl, SSL_MODE_AUTO_RETRY);
 
-              fprintf (stderr, "end\n");
+          BIO_set_conn_hostname (bio, server);
+          if (BIO_do_connect (bio) > 0)
+          {
+            if (SSL_get_verify_result (ssl) == X509_V_OK)
+            {
+              if (taskd_verify_certificate (ssl))
+              {
+                fprintf (stderr, "connected to server\n");
+                if (taskd_send_request (bio, request))
+                {
+                  fprintf (stderr, "  >>> %s\n", request);
+                  taskd_read_response (bio);
+                }
+                else
+                  fprintf (stderr, "  send error\n");
+
+                fprintf (stderr, "disconnected from server\n");
+              }
+              else
+                fprintf (stderr, "Bad cert\n");
             }
             else
-              fprintf (stderr, "Bad cert\n");
+            {
+              handle_error (__FILE__, __LINE__, "Error verifying cert");
+            }
           }
           else
-          {
-            handle_error (__FILE__, __LINE__, "Error verifying cert");
-          }
+            handle_error (__FILE__, __LINE__, "Error connecting to remote machine");
+
+          // Clean up.
+          BIO_free_all (bio);
         }
         else
-          handle_error (__FILE__, __LINE__, "Error connecting to remote machine");
-
-        // Clean up.
-        BIO_free_all (bio);
+          handle_error (__FILE__, __LINE__, "Error creating connection BIO");
       }
       else
-        handle_error (__FILE__, __LINE__, "Error creating connection BIO");
+        handle_error (__FILE__, __LINE__, "Failed to verify cert");
 
+      SSL_CTX_free (ctx);
     }
-    else
-      handle_error (__FILE__, __LINE__, "Failed to verify cert");
-
-    SSL_CTX_free (ctx);
   }
+  else
+    status = TASKD_STATUS_ERROR;
 
-
-  return TASKD_STATUS_OK;
+  return status;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 extern "C" int taskd_nonssl_request (
   const char* server,
-  int port,
   const char* request)
 {
-  std::string connection = taskd_connection (server, port);
   taskd_init_ssl ();
 
   // Create a new connection.
-  BIO* bio = BIO_new_connect ((char*) connection.c_str ());
+  BIO* bio = BIO_new_connect ((char*) server);
   if (bio)
   {
     // Check for a successful connection.
     if (BIO_do_connect (bio) > 0)
     {
-      fprintf (stderr, "begin\n");
+      fprintf (stderr, "connected to server\n");
 
       if (taskd_send_request (bio, request))
+      {
+        fprintf (stderr, "  >>> %s\n", request);
         taskd_read_response (bio);
+      }
       else
-        fprintf (stderr, "Error!\n");
+        fprintf (stderr, "  send error\n");
 
-      fprintf (stderr, "end\n");
+      fprintf (stderr, "disconnected from server\n");
     }
     else
       handle_error (__FILE__, __LINE__, "Error connecting to remote machine");
@@ -152,6 +157,8 @@ extern "C" size_t taskd_response (
   char* buffer,
   size_t size)
 {
+  // TODO Dole out 'response' in chunks of size 'size'.
+
   extern std::string response;
   if (response.size () < size)
   {
