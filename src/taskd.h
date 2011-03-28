@@ -52,13 +52,16 @@ extern "C"
 #define TASKD_STATUS_UNIMPLEMENTED       502
 #define TASKD_STATUS_PARAM_UNIMPLEMENTED 503
 #define TASKD_STATUS_TOO_BIG             504
-#define TASKD_STATUS_ERROR               600  // Library error
+
+#define TASKD_STATUS_ERROR               600  // General Library error
+#define TASKD_STATUS_SSL_ERROR           601  // SSL error
+#define TASKD_STATUS_CERT_ERROR          602  // Cert error
 
 int    taskd_request        (const char*, const char*, const char*);
 int    taskd_nonssl_request (const char*, const char*);
 size_t taskd_response       (char*, size_t);
 
-// TODO Need a way to access errors.
+void   taskd_debug          (int);
 
 #ifdef __cplusplus
 };

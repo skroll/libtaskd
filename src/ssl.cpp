@@ -26,6 +26,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+#include <iostream>
 #include <string>
 #include <sstream>
 
@@ -37,27 +38,25 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 // Non-reentrant data
-std::string response;
+std::string taskd_response_str;
+bool taskd_debug_mode = false;
 
 ////////////////////////////////////////////////////////////////////////////////
 bool taskd_init_ssl (void)
 {
   if (! SSL_library_init ())
   {
-    fprintf (stderr, "** OpenSSL initialization failed!\n");
+    if (taskd_debug_mode)
+      std::cerr << "libtaskd: OpenSSL initialization failed.\n";
+
     return false;
   }
 
   SSL_load_error_strings ();
-  return true;
-}
+  if (taskd_debug_mode)
+    std::cerr << "libtaskd: OpenSSL initialization succeeded.\n";
 
-////////////////////////////////////////////////////////////////////////////////
-std::string taskd_connection (const char* host, int port)
-{
-  std::stringstream s;
-  s << host << ":" << port;
-  return s.str ();
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -66,29 +65,35 @@ bool taskd_verify_certificate (SSL* ssl)
   X509* server_cert = SSL_get_peer_certificate (ssl);
   if (server_cert != NULL)
   {
-    fprintf (stderr, "Server certificate:\n");
+    if (taskd_debug_mode)
+      std::cerr << "libtaskd: Server certificate:\n";
 
     char* str = X509_NAME_oneline (X509_get_subject_name (server_cert), 0, 0);
     if (str)
     {
-      fprintf (stderr, "  subject: %s\n", str);
+      if (taskd_debug_mode)
+        std::cerr << "libtaskd: subject: " << str << "\n";
       free (str);
     }
 
     str = X509_NAME_oneline (X509_get_issuer_name (server_cert), 0, 0);
     if (str)
     {
-      fprintf (stderr, "  issuer: %s\n", str);
+      if (taskd_debug_mode)
+        std::cerr << "libtaskd: subject: " << str << "\n";
       free (str);
     }
 
-    // TODO Check these values.
+    // TODO How does one verify a cert?
 
     X509_free (server_cert);
     return true;
   }
   else
-    fprintf (stderr, "The SSL server does not have certificate.\n");
+  {
+    if (taskd_debug_mode)
+      std::cerr << "libtaskd: No server certificate.\n";
+  }
 
   return false;
 }
@@ -115,7 +120,7 @@ bool taskd_send_request (BIO* bio, const char* request)
 ////////////////////////////////////////////////////////////////////////////////
 void taskd_read_response (BIO* bio)
 {
-  response = "";
+  taskd_response_str = "";
 
   int error;
   int bytes = 0;
@@ -127,8 +132,11 @@ void taskd_read_response (BIO* bio)
     if (error > 0)
     {
       buf[error] = 0;
-      fprintf (stderr, "  <<< %s\n", buf);
-      response += buf;
+
+      if (taskd_debug_mode)
+        std::cerr << "libtaskd: <<< " << buf << "\n";
+
+      taskd_response_str += buf;
     }
     else
     {
@@ -142,11 +150,10 @@ void taskd_read_response (BIO* bio)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void handle_error (const char* file, int lineno, const char* msg)
+void taskd_error (const char* msg)
 {
-  fprintf (stderr, "** %s:%i %s\n", file, lineno, msg);
+  std::cerr << "libtaskd: " << msg << "\n";
   ERR_print_errors_fp (stderr);
-  exit (-1);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

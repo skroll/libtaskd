@@ -26,8 +26,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+#include <iostream>
 #include <string>
-
+#include <stdlib.h>
 #include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/ssl.h>
@@ -38,19 +39,22 @@
 
 // In ssl.cpp
 bool taskd_init_ssl ();
-std::string taskd_connection (const char*, int);
 bool taskd_verify_certificate (SSL*);
 bool taskd_send_request (BIO*, const char*);
 void taskd_read_response (BIO*);
-void handle_error (const char*, int, const char*);
+void taskd_error (const char*);
+
+extern std::string taskd_response_str;
+extern bool taskd_debug_mode;
 
 ////////////////////////////////////////////////////////////////////////////////
+// PUBLIC INTERFACE
 extern "C" int taskd_request (
   const char* server,
   const char* certificate,
   const char* request)
 {
-  int status = TASKD_STATUS_OK;
+  int status = TASKD_STATUS_ERROR;
 
   if (taskd_init_ssl ())
   {
@@ -74,99 +78,167 @@ extern "C" int taskd_request (
             {
               if (taskd_verify_certificate (ssl))
               {
-                fprintf (stderr, "connected to server\n");
+                if (taskd_debug_mode)
+                  std::cerr << "libtaskd: connected to server\n";
+
                 if (taskd_send_request (bio, request))
                 {
-                  fprintf (stderr, "  >>> %s\n", request);
+                  if (taskd_debug_mode)
+                    std::cerr << "libtaskd: >>> " << request << "\n";
                   taskd_read_response (bio);
+
+                  // TODO Extract the actual status from the JSON.
+                  status = TASKD_STATUS_OK;
+                  std::string::size_type p;
+                  p = taskd_response_str.find ("\"status\":{\"code\":");
+                  if (p != std::string::npos)
+                    status = strtol (taskd_response_str.substr (p + 17, 3).c_str (), (char **)NULL, 10);
                 }
                 else
-                  fprintf (stderr, "  send error\n");
+                {
+                  status = TASKD_STATUS_ERROR;
+                  if (taskd_debug_mode)
+                    std::cerr << "libtaskd: send error\n";
+                }
 
-                fprintf (stderr, "disconnected from server\n");
+                if (taskd_debug_mode)
+                  std::cerr << "libtaskd: disconnected from server\n";
               }
               else
-                fprintf (stderr, "Bad cert\n");
+              {
+                status = TASKD_STATUS_CERT_ERROR;
+                if (taskd_debug_mode)
+                  std::cerr << "libtaskd: Bad server cert\n";
+              }
             }
             else
             {
-              handle_error (__FILE__, __LINE__, "Error verifying cert");
+              status = TASKD_STATUS_CERT_ERROR;
+              if (taskd_debug_mode)
+                taskd_error ("libtaskd: Error getting server cert");
             }
           }
           else
-            handle_error (__FILE__, __LINE__, "Error connecting to remote machine");
+          {
+            status = TASKD_STATUS_SSL_ERROR;
+            if (taskd_debug_mode)
+              taskd_error ("libtaskd: Error connecting to remote machine");
+          }
 
           // Clean up.
           BIO_free_all (bio);
         }
         else
-          handle_error (__FILE__, __LINE__, "Error creating connection BIO");
+        {
+          status = TASKD_STATUS_SSL_ERROR;
+          if (taskd_debug_mode)
+            taskd_error ("libtaskd: Error creating connection BIO");
+        }
       }
       else
-        handle_error (__FILE__, __LINE__, "Failed to verify cert");
+      {
+        status = TASKD_STATUS_SSL_ERROR;
+        if (taskd_debug_mode)
+          taskd_error ("libtaskd: Failed to verify local key");
+      }
 
       SSL_CTX_free (ctx);
     }
   }
-  else
-    status = TASKD_STATUS_ERROR;
 
   return status;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// PUBLIC INTERFACE
 extern "C" int taskd_nonssl_request (
   const char* server,
   const char* request)
 {
-  taskd_init_ssl ();
+  int status = TASKD_STATUS_ERROR;
 
-  // Create a new connection.
-  BIO* bio = BIO_new_connect ((char*) server);
-  if (bio)
+  if (taskd_init_ssl ())
   {
-    // Check for a successful connection.
-    if (BIO_do_connect (bio) > 0)
+    // Create a new connection.
+    BIO* bio = BIO_new_connect ((char*) server);
+    if (bio)
     {
-      fprintf (stderr, "connected to server\n");
-
-      if (taskd_send_request (bio, request))
+      // Check for a successful connection.
+      if (BIO_do_connect (bio) > 0)
       {
-        fprintf (stderr, "  >>> %s\n", request);
-        taskd_read_response (bio);
+        if (taskd_debug_mode)
+          std::cerr << "libtaskd: connected to server\n";
+
+        if (taskd_send_request (bio, request))
+        {
+          if (taskd_debug_mode)
+            std::cerr << "libtaskd: >>> " << request << "\n";
+          taskd_read_response (bio);
+
+          // TODO Extract the actual status from the JSON.
+          status = TASKD_STATUS_OK;
+          std::string::size_type p;
+          p = taskd_response_str.find ("\"status\":{\"code\":");
+          if (p != std::string::npos)
+            status = strtol (taskd_response_str.substr (p + 17, 3).c_str (), (char **)NULL, 10);
+        }
+        else
+        {
+          status = TASKD_STATUS_ERROR;
+          if (taskd_debug_mode)
+            std::cerr << "libtaskd: send error\n";
+        }
+
+        if (taskd_debug_mode)
+          std::cerr << "libtaskd: disconnected from server\n";
       }
       else
-        fprintf (stderr, "  send error\n");
+      {
+        status = TASKD_STATUS_SSL_ERROR;
+        if (taskd_debug_mode)
+          taskd_error ("libtaskd: Error connecting to remote machine");
+      }
 
-      fprintf (stderr, "disconnected from server\n");
+      // Clean up.
+      BIO_free_all (bio);
     }
     else
-      handle_error (__FILE__, __LINE__, "Error connecting to remote machine");
-
-    // Clean up.
-    BIO_free_all (bio);
+    {
+      status = TASKD_STATUS_SSL_ERROR;
+      if (taskd_debug_mode)
+        taskd_error ("libtaskd: Error creating connection BIO");
+    }
   }
-  else
-    handle_error (__FILE__, __LINE__, "Error creating connection BIO");
 
-  return TASKD_STATUS_OK;
+  return status;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// PUBLIC INTERFACE
 extern "C" size_t taskd_response (
   char* buffer,
   size_t size)
 {
-  // TODO Dole out 'response' in chunks of size 'size'.
-
-  extern std::string response;
-  if (response.size () < size)
+  if (taskd_response_str.size () < size)
   {
-    strcpy (buffer, response.c_str ());
-    return response.size ();
+    strcpy (buffer, taskd_response_str.c_str ());
+    return taskd_response_str.size ();
+  }
+  else
+  {
+    strncpy (buffer, taskd_response_str.c_str (), size);
+    taskd_response_str.erase (0, size);
+    return size;
   }
 
   return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// PUBLIC INTERFACE
+extern "C" void taskd_debug (int value)
+{
+  taskd_debug_mode = (value != 0 ? true : false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
