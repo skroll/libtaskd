@@ -4,7 +4,7 @@ For a first-time build, run these commands to generate the makefiles and then
 build the binaries.
 
     $ tar xzf libtaskd-0.8.0.tar.gz
-    $ cd libtaskdvitapi-0.8.0
+    $ cd libtaskd-0.8.0
     $ cmake .
     $ make
     $ make test

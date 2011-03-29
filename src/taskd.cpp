@@ -130,7 +130,7 @@ extern "C" int taskd_request (
         }
         else
         {
-          status = TASKD_STATUS_SSL_ERROR;
+          status = TASKD_STATUS_ERROR;
           if (taskd_debug_mode)
             taskd_error ("libtaskd: Error creating connection BIO");
         }
@@ -204,7 +204,7 @@ extern "C" int taskd_nonssl_request (
     }
     else
     {
-      status = TASKD_STATUS_SSL_ERROR;
+      status = TASKD_STATUS_ERROR;
       if (taskd_debug_mode)
         taskd_error ("libtaskd: Error creating connection BIO");
     }
