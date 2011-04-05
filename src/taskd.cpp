@@ -87,7 +87,7 @@ extern "C" int taskd_request (
                     std::cerr << "libtaskd: >>> " << request << "\n";
                   taskd_read_response (bio);
 
-                  // TODO Extract the actual status from the JSON.
+                  // Extract the actual status from the JSON.
                   status = TASKD_STATUS_OK;
                   std::string::size_type p;
                   p = taskd_response_str.find ("\"status\":{\"code\":");
@@ -175,7 +175,7 @@ extern "C" int taskd_nonssl_request (
             std::cerr << "libtaskd: >>> " << request << "\n";
           taskd_read_response (bio);
 
-          // TODO Extract the actual status from the JSON.
+          // Extract the actual status from the JSON.
           status = TASKD_STATUS_OK;
           std::string::size_type p;
           p = taskd_response_str.find ("\"status\":{\"code\":");

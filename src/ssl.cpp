@@ -44,14 +44,7 @@ bool taskd_debug_mode = false;
 ////////////////////////////////////////////////////////////////////////////////
 bool taskd_init_ssl (void)
 {
-  if (! SSL_library_init ())
-  {
-    if (taskd_debug_mode)
-      std::cerr << "libtaskd: OpenSSL initialization failed.\n";
-
-    return false;
-  }
-
+  SSL_library_init ();
   SSL_load_error_strings ();
   if (taskd_debug_mode)
     std::cerr << "libtaskd: OpenSSL initialization succeeded.\n";

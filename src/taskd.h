@@ -57,6 +57,15 @@ extern "C"
 #define TASKD_STATUS_SSL_ERROR           601  // SSL error
 #define TASKD_STATUS_CERT_ERROR          602  // Cert error
 
+//                               client       org          user         key
+//void   taskd_authenticate     (const char*, const char*, const char*, const char*);
+
+//void   taskd_compose_request (...);
+//void   taskd_decompose_response (...);
+// Warnings?
+// Errors?
+// Redirect?
+
 int    taskd_request        (const char*, const char*, const char*);
 int    taskd_nonssl_request (const char*, const char*);
 size_t taskd_response       (char*, size_t);
