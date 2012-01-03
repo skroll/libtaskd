@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // libtaskd - Task Server Client Library
 //
-// Copyright 2006 - 2010, Paul Beckingham, Federico Hernandez.
+// Copyright 2006 - 2012, Paul Beckingham, Federico Hernandez.
 // All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
