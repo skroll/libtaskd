@@ -1,6 +1,8 @@
 cmake_minimum_required (VERSION 2.8)
 include_directories (${CMAKE_SOURCE_DIR}/src)
-set (taskd_SRCS taskd.cpp ssl.cpp)
+set (taskd_SRCS taskd.cpp
+                ssl.cpp)
+
 add_library (taskd STATIC ${taskd_SRCS})
 set (CMAKE_INSTALL_LIBDIR lib CACHE PATH "Output directory for libraries")
 install (TARGETS taskd DESTINATION ${CMAKE_INSTALL_LIBDIR})

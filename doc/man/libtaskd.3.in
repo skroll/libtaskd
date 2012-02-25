@@ -1,0 +1,61 @@
+.TH taskd 3 2011-06-01 "libtaskd 0.8.0alpha" "Library Functions Manual"
+
+.SH NAME
+taskd \- A library providing support for SSL access to the Task Server.
+
+.SH Library
+.B libtaskd.a (-ltaskd)
+
+.SH SYNOPSIS
+#include <taskd.h>
+
+int
+.B taskd_request
+(const char* server, int port, const char* key, const char* request);
+.br
+int
+.B taskd_nossl_request
+(const char* server, int port, const char* request);
+.br
+size_t
+.B taskd_response
+(char* buf, size_t len);
+.br
+void
+.B taskd_debug
+(int on_off);
+
+.SH DESCRIPTION
+?
+
+.SH EXAMPLES
+?
+
+.SH ERRORS
+?
+
+.SH "CREDITS & COPYRIGHTS"
+Libtaskd was written by P. Beckingham <paul@beckingham.net>,
+F. Hernandez <ultrafredde@gmail.com>.
+.br
+Copyright (C) 2010 - 2012, Göteborg Bit Factory
+Copyright (C) 2010 - 2012, P. Beckingham, F. Hernandez
+
+libtaskd is distributed under the MIT license. See
+http://www.opensource.org/licenses/mit-license.php for more information.
+
+For more information regarding libtaskd, the following may be referenced:
+
+.TP
+The official site at
+<http://taskwarrior.org>
+
+.TP
+You can contact the project by writing an email to
+<support@taskwarrior.org>
+
+.SH REPORTING BUGS
+.TP
+Bugs in task may be reported to the issue-tracker at
+<http://taskwarrior.org>
+
