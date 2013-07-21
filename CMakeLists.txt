@@ -71,7 +71,7 @@ if (EXISTS test)
   add_subdirectory (test EXCLUDE_FROM_ALL)
 endif (EXISTS test)
 
-set (doc_FILES NEWS ChangeLog README INSTALL AUTHORS COPYING)
+set (doc_FILES NEWS ChangeLog INSTALL AUTHORS COPYING)
 foreach (doc_FILE ${doc_FILES})
   install (FILES ${doc_FILE}  DESTINATION ${TASKD_DOCDIR})
 endforeach (doc_FILE)

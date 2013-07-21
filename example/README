@@ -1,0 +1,7 @@
+Example Client, using libtaskd
+------------------------------
+
+This example shows how a simple client might create a new task, and sync that
+task with the Task Server.  This is not intended to be a fully-functional
+client, just an illustration of the libtaskd interface.
+
