@@ -9,5 +9,4 @@ CPackConfig.cmake
 CPackSourceConfig.cmake
 .*.swp
 cmake.h
-commit.h
 libtaskd.3
