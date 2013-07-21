@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// libtaskd - Task Server Client Library
+// taskd - Task Server
 //
 // Copyright 2010 - 2013, Göteborg Bit Factory.
 //
@@ -25,43 +25,33 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_UNITTEST
-#define INCLUDED_UNITTEST
+#ifndef INCLUDED_TEXT
+#define INCLUDED_TEXT
 
+#include <vector>
 #include <string>
 
-class UnitTest
-{
-public:
-  UnitTest ();
-  UnitTest (int);
-  ~UnitTest ();
-
-  void plan (int);
-  void planMore (int);
-  void ok (bool, const std::string&);
-  void notok (bool, const std::string&);
-  void is (bool, bool, const std::string&);
-  void is (size_t, size_t, const std::string&);
-  void is (int, int, const std::string&);
-  void is (double, double, const std::string&);
-  void is (double, double, double, const std::string&);
-  void is (unsigned char, unsigned char, const std::string&);
-  void is (const std::string&, const std::string&, const std::string&);
-  void is (const char*, const char*, const std::string&);
-  void diag (const std::string&);
-  void pass (const std::string&);
-  void fail (const std::string&);
-  void skip (const std::string&);
-
-private:
-  int mPlanned;
-  int mCounter;
-  int mPassed;
-  int mFailed;
-  int mSkipped;
-};
+// text.cpp, Non-UTF-8 aware.
+std::string trimLeft (const std::string& in, const std::string& t = " ");
+std::string trimRight (const std::string& in, const std::string& t = " ");
+std::string trim (const std::string& in, const std::string& t = " ");
+void split (std::vector<std::string>&, const std::string&, const char);
+const std::string format (char);
+const std::string format (int);
+const std::string formatHex (int);
+const std::string format (float, int, int);
+const std::string format (double, int, int);
+const std::string format (double);
+const std::string format (const std::string&, const std::string&);
+const std::string format (const std::string&, int);
+const std::string format (const std::string&, const std::string&, const std::string&);
+const std::string format (const std::string&, const std::string&, int);
+const std::string format (const std::string&, const std::string&, double);
+const std::string format (const std::string&, int, const std::string&);
+const std::string format (const std::string&, int, int);
+const std::string format (const std::string&, int, int, int);
+const std::string format (const std::string&, int, double);
+const std::string format (const std::string&, const std::string&, const std::string&, const std::string&);
 
 #endif
-
 ////////////////////////////////////////////////////////////////////////////////

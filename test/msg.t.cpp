@@ -25,43 +25,40 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_UNITTEST
-#define INCLUDED_UNITTEST
+#include <cmake.h>
+#include <iostream>
+#include <Msg.h>
+#include <test.h>
 
-#include <string>
-
-class UnitTest
+////////////////////////////////////////////////////////////////////////////////
+int main (int argc, char** argv)
 {
-public:
-  UnitTest ();
-  UnitTest (int);
-  ~UnitTest ();
+  UnitTest t (12);
 
-  void plan (int);
-  void planMore (int);
-  void ok (bool, const std::string&);
-  void notok (bool, const std::string&);
-  void is (bool, bool, const std::string&);
-  void is (size_t, size_t, const std::string&);
-  void is (int, int, const std::string&);
-  void is (double, double, const std::string&);
-  void is (double, double, double, const std::string&);
-  void is (unsigned char, unsigned char, const std::string&);
-  void is (const std::string&, const std::string&, const std::string&);
-  void is (const char*, const char*, const std::string&);
-  void diag (const std::string&);
-  void pass (const std::string&);
-  void fail (const std::string&);
-  void skip (const std::string&);
+  Msg m;
+  t.is (m.serialize (), std::string ("client: ") + PACKAGE_STRING + "\n\n\n", "Msg::serialize '' --> '\\n\\n'");
 
-private:
-  int mPlanned;
-  int mCounter;
-  int mPassed;
-  int mFailed;
-  int mSkipped;
-};
+  m.set ("name", "value");
+  t.is (m.serialize (), std::string ("client: ") + PACKAGE_STRING + "\nname: value\n\n\n", "Msg::serialize 1 var");
 
-#endif
+  m.set ("foo", "bar");
+  t.is (m.serialize (), std::string ("client: ") + PACKAGE_STRING + "\nfoo: bar\nname: value\n\n\n", "Msg::serialize 2 vars");
+
+  m.setPayload ("payload");
+  t.is (m.serialize (), std::string ("client: ") + PACKAGE_STRING + "\nfoo: bar\nname: value\n\npayload\n", "Msg::serialize 2 vars + payload");
+
+  Msg m2;
+  t.ok (m2.parse ("foo: bar\nname: value\n\npayload\n"), "Msg::parse ok");
+  t.is (m2.get ("foo"),   "bar",       "Msg::get");
+  t.is (m2.get ("name"),  "value",     "Msg::get");
+  t.is (m2.getPayload (), "payload\n", "Msg::getPayload");
+
+  Msg m3;
+  t.ok (m3.parse ("foo:bar\nname:   value\n\npayload\n"), "Msg::parse ok");
+  t.is (m3.get ("foo"),   "bar",       "Msg::get");
+  t.is (m3.get ("name"),  "value",     "Msg::get");
+  t.is (m3.getPayload (), "payload\n", "Msg::getPayload");
+  return 0;
+}
 
 ////////////////////////////////////////////////////////////////////////////////

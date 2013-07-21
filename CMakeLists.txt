@@ -1,13 +1,17 @@
 cmake_minimum_required (VERSION 2.8)
+set(CMAKE_LEGACY_CYGWIN_WIN32 0) # Remove when CMake >= 2.8.4 is required
+
+include (CheckFunctionExists)
+include (CheckStructHasMember)
 
 set (HAVE_CMAKE true)
 
-project (taskd)
+project (libtaskd)
 set (PROJECT_VERSION "0.8.0")
 
-SET (TASKD_MAN3DIR share/man/man3  CACHE STRING "Installation directory for man pages, section 3")
-SET (TASKD_LIBDIR  lib             CACHE STRING "Installation directory for the library")
-SET (TASKD_DOCDIR  share/doc/taskd CACHE STRING "Installation directory for doc files")
+SET (TASKD_MAN3DIR share/man/man3     CACHE STRING "Installation directory for man pages, section 3")
+SET (TASKD_LIBDIR  lib                CACHE STRING "Installation directory for the library")
+SET (TASKD_DOCDIR  share/doc/libtaskd CACHE STRING "Installation directory for doc files")
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   set (LINUX true)
@@ -15,8 +19,16 @@ elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   set (DARWIN true)
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
   set (FREEBSD true)
+elseif (${CMAKE_SYSTEM_NAME} MATCHES "OpenBSD")
+  set (OPENBSD true)
+elseif (${CMAKE_SYSTEM_NAME} MATCHES "NetBSD")
+  set (NETBSD true)
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
   set (SOLARIS true)
+elseif (${CMAKE_SYSTEM_NAME} MATCHES "GNU/kFreeBSD")
+  set (KFREEBSD true)
+elseif (${CMAKE_SYSTEM_NAME} MATCHES "GNU/Hurd")
+  set (GNUHURD true)
 else (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   set (UNKNOWN true)
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -39,6 +51,14 @@ set (PACKAGE_NAME "${PACKAGE}")
 set (PACKAGE_TARNAME "${PACKAGE}")
 set (PACKAGE_VERSION "${VERSION}")
 set (PACKAGE_STRING "${PACKAGE} ${VERSION}")
+
+message ("-- Looking for GnuTLS")
+find_package (GnuTLS REQUIRED)
+if (GNUTLS_FOUND)
+  set (HAVE_LIBGNUTLS true)
+  set (TASKD_INCLUDE_DIRS ${TASKD_INCLUDE_DIRS} ${GNUTLS_INCLUDE_DIR})
+  set (TASKD_LIBRARIES    ${TASKD_LIBRARIES}    ${GNUTLS_LIBRARIES})
+endif (GNUTLS_FOUND)
 
 message ("-- Configuring cmake.h")
 configure_file (

@@ -25,43 +25,39 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_UNITTEST
-#define INCLUDED_UNITTEST
+#ifndef INCLUDED_MSG
+#define INCLUDED_MSG
 
+#include <map>
+#include <vector>
 #include <string>
 
-class UnitTest
+class Msg
 {
 public:
-  UnitTest ();
-  UnitTest (int);
-  ~UnitTest ();
+  Msg ();
+  Msg (const Msg&);
+  Msg& operator= (const Msg&);
+  bool operator== (const Msg&) const;
+  ~Msg ();
 
-  void plan (int);
-  void planMore (int);
-  void ok (bool, const std::string&);
-  void notok (bool, const std::string&);
-  void is (bool, bool, const std::string&);
-  void is (size_t, size_t, const std::string&);
-  void is (int, int, const std::string&);
-  void is (double, double, const std::string&);
-  void is (double, double, double, const std::string&);
-  void is (unsigned char, unsigned char, const std::string&);
-  void is (const std::string&, const std::string&, const std::string&);
-  void is (const char*, const char*, const std::string&);
-  void diag (const std::string&);
-  void pass (const std::string&);
-  void fail (const std::string&);
-  void skip (const std::string&);
+  void clear ();
+
+  void set (const std::string&, const int);
+  void set (const std::string&, const std::string&);
+  void set (const std::string&, const double);
+  void setPayload (const std::string&);
+  std::string get (const std::string&) const;
+  std::string getPayload () const;
+
+  void all (std::vector <std::string>&) const;
+  std::string serialize () const;
+  bool parse (const std::string&);
 
 private:
-  int mPlanned;
-  int mCounter;
-  int mPassed;
-  int mFailed;
-  int mSkipped;
+  std::map <std::string, std::string> _header;
+  std::string _payload;
 };
 
 #endif
 
-////////////////////////////////////////////////////////////////////////////////

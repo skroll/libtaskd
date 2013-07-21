@@ -1,9 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
-// kronisk - Date/Time/Duration Library
+// libtaskd - Task Server Client Library
 //
-// Copyright 2010 - 2012, Göteborg Bit Factory.
-// Copyright 2010 - 2012, Paul Beckingham, Federico Hernandez.
-// All rights reserved.
+// Copyright 2010 - 2013, Göteborg Bit Factory.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,19 +24,39 @@
 // http://www.opensource.org/licenses/mit-license.php
 //
 ////////////////////////////////////////////////////////////////////////////////
+#ifndef INCLUDED_TLSCLIENT
+#define INCLUDED_TLSCLIENT
 
-#include <iostream>
-#include <taskd.h>
-#include <test.h>
+#ifdef HAVE_LIBGNUTLS
 
-////////////////////////////////////////////////////////////////////////////////
-int main (int argc, char** argv)
+#include <string>
+#include <gnutls/gnutls.h>
+
+class TLSClient
 {
-  UnitTest t (1);
+public:
+  TLSClient ();
+  ~TLSClient ();
+  void limit (int);
+  void debug (int);
+  void init (const std::string&);
+  void connect (const std::string&, const std::string&);
+  void bye ();
 
-  t.skip ("No tests implemented");
+  void send (const std::string&);
+  void recv (std::string&);
 
-  return 0;
-}
+private:
+  std::string                      _ca;
+  gnutls_certificate_credentials_t _credentials;
+  gnutls_session_t                 _session;
+  int                              _socket;
+  int                              _limit;
+  bool                             _debug;
+};
+
+#endif
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
+

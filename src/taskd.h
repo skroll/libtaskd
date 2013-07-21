@@ -1,9 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // libtaskd - Task Server Client Library
 //
-// Copyright 2010 - 2012, Göteborg Bit Factory.
-// Copyright 2010 - 2012, Paul Beckingham, Federico Hernandez.
-// All rights reserved.
+// Copyright 2010 - 2013, Göteborg Bit Factory.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +35,7 @@ extern "C"
 {
 #endif
 
+/*
 #define TASKD_STATUS_OK                  200
 #define TASKD_STATUS_NO_CHANGE           201
 #define TASKD_STATUS_DEPRECATED          300
@@ -57,21 +56,15 @@ extern "C"
 #define TASKD_STATUS_ERROR               600  // General Library error
 #define TASKD_STATUS_SSL_ERROR           601  // SSL error
 #define TASKD_STATUS_CERT_ERROR          602  // Cert error
+*/
 
-//                               client       org          user         key
-//void   taskd_authenticate     (const char*, const char*, const char*, const char*);
-
-//void   taskd_compose_request (...);
-//void   taskd_decompose_response (...);
-// Warnings?
-// Errors?
-// Redirect?
-
-int    taskd_request        (const char*, const char*, const char*);
-int    taskd_nonssl_request (const char*, const char*);
-size_t taskd_response       (char*, size_t);
-
-void   taskd_debug          (int);
+int taskd_authenticate      (const char*, const char*, const char*, const char*, const char*);
+int taskd_add_local_change  (const char*);
+int taskd_sync              (const char*);
+int taskd_error             (int*, const char*, size_t);
+int taskd_get_remote_change (const char*, size_t);
+int taskd_server_message    (const char*, size_t);
+int taskd_debug             (int);
 
 #ifdef __cplusplus
 };
