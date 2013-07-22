@@ -6,6 +6,26 @@ include_directories (${CMAKE_SOURCE_DIR}
 
 set (test_SRCS msg.t)
 
+message ("-- Configuring run_all")
+if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+
+set (TESTBLOB "./*.t")
+if (CYGWIN)
+  set (TESTBLOB "./*.t ./*.t.exe")
+endif (CYGWIN)
+
+else (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+
+set (TESTBLOB "${CMAKE_SOURCE_DIR}/test/*.t ${CMAKE_BINARY_DIR}/test/*.t")
+if (CYGWIN)
+  set (TESTBLOB "${CMAKE_SOURCE_DIR}/test/*.t ${CMAKE_BINARY_DIR}/test/*.t.exe")
+endif (CYGWIN)
+
+endif (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+
+configure_file (run_all.in run_all)
+
+
 add_custom_target (test ./run_all --verbose
                         DEPENDS ${test_SRCS}
                         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/test)

@@ -1,2 +1,5 @@
 all.log
 sample.t
+msg.t
+*.exe
+run_all
