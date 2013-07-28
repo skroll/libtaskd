@@ -60,10 +60,11 @@ extern "C"
 
 int taskd_authenticate      (const char*, const char*, const char*, const char*, const char*);
 int taskd_add_local_change  (const char*);
-int taskd_sync              (const char*);
-int taskd_error             (int*, const char*, size_t);
-int taskd_get_remote_change (const char*, size_t);
-int taskd_server_message    (const char*, size_t);
+int taskd_sync              (char*);
+int taskd_error             (int*, char*, size_t);
+int taskd_get_remote_change (char*, size_t);
+int taskd_server_message    (char*, size_t);
+int taskd_limit             (int);
 int taskd_debug             (int);
 
 #ifdef __cplusplus

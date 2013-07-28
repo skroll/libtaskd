@@ -38,7 +38,7 @@ int main (int argc, char** argv)
   // remote changes until the function retuns non-zero.
   char remote_task[512];
   while (taskd_get_remote_change (remote_task, 512) == 0)
-    printf ("received %ѕ\n", remote_task);
+    printf ("received %s\n", remote_task);
 
   // Sometimes the server has a message for the client, which may notify the
   // user of some maintenance downtime, for example.

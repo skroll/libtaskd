@@ -27,8 +27,6 @@
 #ifndef INCLUDED_TLSCLIENT
 #define INCLUDED_TLSCLIENT
 
-#ifdef HAVE_LIBGNUTLS
-
 #include <string>
 #include <gnutls/gnutls.h>
 
@@ -55,7 +53,6 @@ private:
   bool                             _debug;
 };
 
-#endif
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
