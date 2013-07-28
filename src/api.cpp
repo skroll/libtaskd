@@ -27,6 +27,7 @@
 
 #include <queue>
 #include <string>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <TLSClient.h>
@@ -35,7 +36,8 @@
 // Outgoing.
 static int _debug_level            = 0;
 static int _limit                  = (1024*1024);
-static std::string _server         = "";
+static std::string _host           = "localhost";
+static std::string _port           = "6544";
 static std::string _org            = "";
 static std::string _user           = "";
 static std::string _key            = "";
@@ -78,7 +80,11 @@ extern "C" int taskd_authenticate (
   if (strlen (key) != 0 && strlen (key) != 36)
     return 4;
 
-  _server = server;
+  std::string hostPort = server;
+  std::string::size_type colon = hostPort.find (':');
+  _host = hostPort.substr (0, colon);
+  _port = hostPort.substr (colon + 1);
+
   _org    = org;
   _user   = user;
   _key    = key;
@@ -132,8 +138,8 @@ extern "C" int taskd_sync (
   client.debug (_debug_level);
   client.limit (_limit);
   client.init (_cert);
+  client.connect (_host, _port);
 /*
-  client.connect (hostname, port);
   client.send (request.serialize ());
 
   std::string response;
