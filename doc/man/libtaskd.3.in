@@ -1,7 +1,7 @@
-.TH taskd 3 2011-06-01 "libtaskd 0.8.0alpha" "Library Functions Manual"
+.TH libtaskd 3 2013-07-28 "libtaskd 1.0.0alpha" "Library Functions Manual"
 
 .SH NAME
-taskd \- A library providing support for SSL access to the Task Server.
+libtaskd \- A library providing support for TLS/SSL access to the Task Server.
 
 .SH Library
 .B libtaskd.a (-ltaskd)
@@ -10,36 +10,91 @@ taskd \- A library providing support for SSL access to the Task Server.
 #include <taskd.h>
 
 int
-.B taskd_request
-(const char* server, int port, const char* key, const char* request);
+.B taskd_authenticate
+(const char* server, const char* org, const char* user, const char* password, const char* cert);
 .br
 int
-.B taskd_nossl_request
-(const char* server, int port, const char* request);
+.B taskd_add_local_change
+(const char* task);
 .br
-size_t
-.B taskd_response
-(char* buf, size_t len);
+int
+.B taskd_sync
+(char* key);
 .br
-void
+int
+.B taskd_error
+(int* code, char* error, size_t size);
+.br
+int
+.B taskd_get_remote_change
+(char* task, size_t size);
+.br
+int
+.B taskd_server_message
+(char* message, size_t size);
+.br
+int
+.B taskd_limit
+(int limit);
+.br
+int
 .B taskd_debug
-(int on_off);
+(int level);
 
-.SH DESCRIPTION
-?
+.SH GENERAL USAGE
 
-.SH EXAMPLES
-?
+A Task Server client using this library needs to store the following:
+
+- a local store of tasks
+.br
+- a local store of the sync key, initially an empty string
+.br
+- a list of tasks modified since the last taskd_sync call
+
+When a sync is performed, the client will first call taskѕ_add_local_change for
+each of the tasks modified since the last taskd_sync call.
+
+The taskd_sync call is provided a copy of the sync key, which will be modified
+by the server.  The modified sync key should be stored, and used in the next
+call to taskd_sync.  Failure to provide a sync key, results in all tasks and
+modifications being sent by the server.  Every time data on the server changes,
+the sync key changes, as it is a reference to a change set.
+
+On a successful taskd_sync call, there may be remotely changed tasks to be
+retrieved.  Call taskd_get_remote_change repeatedly until it returns non-zero.
+Each successful call will yield a remotely-modified task.  These tasks should
+be parsed, and the UUID extracted.  If the UUID is found in the local task
+store, then it should be replaced in its entirety.  If the UUID is not found in
+the local store, it should be added.
+
+If taskd_sync fails, the server error can be obtained by calling taskd_error.
+
+On occasion the server will include a message to be seen by the user.  Obtain
+this by calling taskd_server_message.  Such messages may include server downtime
+notices, or account changes.
 
 .SH ERRORS
-?
+
+All library calls return error codes that are one of the following values:
+
+0  success
+.br
+1  no data
+.br
+2  buffer too small
+.br
+3  bad argument
+.br
+4  malformed data
+.br
+5  error
 
 .SH "CREDITS & COPYRIGHTS"
 Libtaskd was written by P. Beckingham <paul@beckingham.net>,
 F. Hernandez <ultrafredde@gmail.com>.
 .br
-Copyright (C) 2010 - 2012, Göteborg Bit Factory
-Copyright (C) 2010 - 2012, P. Beckingham, F. Hernandez
+Copyright (C) 2010 - 2013, Göteborg Bit Factory
+Copyright (C) 2010 - 2013, P. Beckingham, F. Hernandez
 
 libtaskd is distributed under the MIT license. See
 http://www.opensource.org/licenses/mit-license.php for more information.
