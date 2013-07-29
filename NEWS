@@ -1,5 +1,5 @@
 
-New Features in litaskd 0.9.0.alpha
+New Features in libtaskd 1.0.0.alpha
 
   - New API.
   - New example client program.
@@ -12,10 +12,10 @@ New Features in litaskd 0.9.0.alpha
 Libtaskd has been built and tested on the following configurations:
 
   * OS X 10.8 Mountain Lion
-  * Debian 6.0 Squeeze (stable) and 7.0
+  * Debian 6.0 Squeeze (stable) and 7.0 Wheezy
   * Ubuntu 10.04 Lucid Lynx and 13.04 Raring Ringtail
   * FreeBSD 9.0
-  * Fedora 19.0
+  * Fedora 19.0 Schrödinger's Cat
   * Cygwin 1.7
 
 ---
