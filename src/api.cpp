@@ -201,13 +201,15 @@ extern "C" int taskd_sync (
 
   catch (const std::string& e)
   {
-    printf ("%s\n", e.c_str ());
+    _remote_error = e;
+    _remote_code = 500;
     return 5;
   }
 
   catch (...)
   {
-    printf ("Unknown error.\n");
+    _remote_error = "Unknown error.";
+    _remote_code = 500;
     return 5;
   }
 
@@ -228,8 +230,8 @@ extern "C" int taskd_error (
   size_t size)
 {
   // Validation.
-
-
+  if (!code || !error || !size)
+    return 3;
 
   if (_remote_error != "")
   {
