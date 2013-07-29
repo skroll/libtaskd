@@ -26,11 +26,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <queue>
+#include <vector>
 #include <string>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <TLSClient.h>
+#include <Msg.h>
+#include <text.h>
 #include <taskd.h>
 
 // Outgoing.
@@ -117,7 +120,7 @@ extern "C" int taskd_add_local_change (
     return 4;
 
   // Store the task for the upcoming sync.
-  _local_tasks.push_back (task);
+  _local_tasks.push_back (trim (task, " \n"));
   return 0;
 }
 
@@ -126,7 +129,11 @@ extern "C" int taskd_add_local_change (
 //
 // Return status:
 //   0 success
+//   1 no data
+//   2 buffer too small
 //   3 bad argument
+//   4 malformed data
+//   5 error
 extern "C" int taskd_sync (
   char* sync_key)
 {
@@ -134,18 +141,75 @@ extern "C" int taskd_sync (
   if (!sync_key)
     return 3;
 
-  TLSClient client;
-  client.debug (_debug_level);
-  client.limit (_limit);
-  client.init (_cert);
-  client.connect (_host, _port);
-/*
-  client.send (request.serialize ());
+  try
+  {
+    // Combine local tasks into the payload.
+    std::string payload = "";
+    std::deque <std::string>::iterator i;
+    for (i = _local_tasks.begin (); i != _local_tasks.end (); ++i)
+      payload += *i + "\n";
 
-  std::string response;
-  client.recv (response);
-  client.bye ();
-*/
+    // Compose the sync request.
+    Msg sync;
+    sync.set ("protocol", "v1");
+    sync.set ("type",     "sync");
+    sync.set ("org",      _org);
+    sync.set ("user",     _user);
+    sync.set ("key",      _key);
+    sync.setPayload (payload);
+
+    // Send sync request and payload.
+    TLSClient client;
+    client.debug (_debug_level);
+    client.limit (_limit);
+    client.init (_cert);
+    client.connect (_host, _port);
+    client.send (sync.serialize ());
+
+    // Get server response.
+    std::string response;
+    client.recv (response);
+    client.bye ();
+
+    // Parse payload.
+    Msg remotes;
+    remotes.parse (response);
+    std::vector <std::string> tasks;
+    split (tasks, remotes.getPayload (), '\n');
+
+    // Store remote tasks and sync key.
+    _remote_tasks.clear ();
+    std::vector <std::string>::iterator r;
+    for (r = tasks.begin (); r != tasks.end (); ++r)
+    {
+      if (r->size () > 1)
+      {
+        if ((*r)[0] == '{')
+          _remote_tasks.push_back (*r);
+        else
+          strcpy (sync_key, r->c_str ());
+      }
+    }
+
+    // Store message, if any.
+    _remote_message = remotes.get ("message");
+
+    // Store code and error.
+    _remote_code  = (int) strtol (remotes.get ("code").c_str (), NULL, 10);
+    _remote_error = remotes.get ("error");
+  }
+
+  catch (const std::string& e)
+  {
+    printf ("%s\n", e.c_str ());
+    return 5;
+  }
+
+  catch (...)
+  {
+    printf ("Unknown error.\n");
+    return 5;
+  }
 
   return 0;
 }
@@ -204,6 +268,7 @@ extern "C" int taskd_get_remote_change (
       return 2;
 
     strcpy (task, _remote_tasks[0].c_str ());
+    _remote_tasks.pop_front ();
     return 0;
   }
 

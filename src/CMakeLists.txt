@@ -4,6 +4,7 @@ include_directories (${CMAKE_SOURCE_DIR}
                      ${TASKD_INCLUDE_DIRS})
 set (taskd_SRCS api.cpp       taskd.h
                 Msg.cpp       Msg.h
+                text.cpp      text.h
                 TLSClient.cpp TLSClient.h)
 
 add_library (taskd STATIC ${taskd_SRCS})
