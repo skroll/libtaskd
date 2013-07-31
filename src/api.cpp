@@ -322,7 +322,7 @@ extern "C" int taskd_limit (
 // PUBLIC INTERFACE
 //
 // Return status:
-//   Previous debug level
+//   Previous debug level, default 0
 extern "C" int taskd_debug (
   int level)
 {

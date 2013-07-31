@@ -35,28 +35,30 @@ extern "C"
 {
 #endif
 
-/*
+// 2xx - Positive Completion reply
 #define TASKD_STATUS_OK                  200
 #define TASKD_STATUS_NO_CHANGE           201
+
+// 3xx - Positive Intermediate reply
 #define TASKD_STATUS_DEPRECATED          300
 #define TASKD_STATUS_REDIRECT            301
 #define TASKD_STATUS_RETRY               302
+
+// 4xx - Transient Negative Completion reply
 #define TASKD_STATUS_MALFORMED           400
 #define TASKD_STATUS_ENCODING            401
 #define TASKD_STATUS_UNAVAILABLE         420
+#define TASKD_STATUS_SHUTDOWN            421
 #define TASKD_STATUS_ACCESS              430
 #define TASKD_STATUS_SUSPENDED           431
 #define TASKD_STATUS_TERMINATED          432
+
+// 5xx - Permanent Negative Completion reply
 #define TASKD_STATUS_SYNTAX_ERROR        500
 #define TASKD_STATUS_PARAM_ERROR         501
 #define TASKD_STATUS_UNIMPLEMENTED       502
 #define TASKD_STATUS_PARAM_UNIMPLEMENTED 503
 #define TASKD_STATUS_TOO_BIG             504
-
-#define TASKD_STATUS_ERROR               600  // General Library error
-#define TASKD_STATUS_SSL_ERROR           601  // SSL error
-#define TASKD_STATUS_CERT_ERROR          602  // Cert error
-*/
 
 int taskd_authenticate      (const char*, const char*, const char*, const char*, const char*);
 int taskd_add_local_change  (const char*);
