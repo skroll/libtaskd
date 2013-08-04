@@ -79,8 +79,8 @@ extern "C" int taskd_authenticate (
   if (access (cert, F_OK | R_OK))
     return 4;
 
-  // A key is a UUID, and therefore either 36 characters or blank.
-  if (strlen (key) != 0 && strlen (key) != 36)
+  // A key is a UUID, and therefore either 36 characters.
+  if (strlen (key) != 36)
     return 4;
 
   std::string hostPort = server;
@@ -140,6 +140,10 @@ extern "C" int taskd_sync (
   // Validation.
   if (!sync_key)
     return 3;
+
+  // A key is a UUID, and therefore either 36 characters or blank.
+  if (strlen (sync_key) != 0 && strlen (sync_key) != 36)
+    return 4;
 
   try
   {
