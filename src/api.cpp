@@ -148,7 +148,7 @@ extern "C" int taskd_sync (
   try
   {
     // Combine local tasks into the payload.
-    std::string payload = "";
+    std::string payload = std::string (sync_key) + "\n";
     std::deque <std::string>::iterator i;
     for (i = _local_tasks.begin (); i != _local_tasks.end (); ++i)
       payload += *i + "\n";
