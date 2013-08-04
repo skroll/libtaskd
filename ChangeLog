@@ -1,9 +1,10 @@
 
 ------ current release ---------------------------
 
-1.0.0 (2013-07-28) -
+1.0.0.alpha (2013-07-28) -
  + Added man page.
  + Added parameter validation.
+ + Bug: sync_key was not inserted into the payload.
 
 ------ old releases ------------------------------
 
